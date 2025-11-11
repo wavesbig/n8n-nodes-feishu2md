@@ -1,0 +1,38 @@
+{
+  "name": "n8n-nodes-feishu2md",
+  "version": "0.1.6",
+  "description": "n8n node to export Feishu/Lark docx to Markdown via feishu2md CLI",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "n8n": {
+    "nodes": [
+      "dist/nodes/Feishu2md/Feishu2md.node.js"
+    ],
+    "credentials": [
+      "dist/credentials/FeishuApi.credentials.js"
+    ]
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf dist",
+    "prepare": "npm run build"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md",
+    "package.json"
+  ],
+  "dependencies": {
+    "archiver": "^7.0.1"
+  },
+  "devDependencies": {
+    "@types/archiver": "^3.1.1",
+    "@types/node": "^20.14.10",
+    "n8n-core": "^1.61.0",
+    "n8n-workflow": "^1.61.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.3"
+  }
+}
