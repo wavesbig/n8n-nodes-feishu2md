@@ -166,7 +166,7 @@ export class Feishu2md implements INodeType {
     group: ["transform"],
     version: 1,
     description: "下载飞书文档为 Markdown（使用 feishu2md CLI）",
-    icon: 'file:feishu2md.svg',
+    icon: 'file:icons/feishu2md.svg',
     defaults: {
       name: "Feishu2md",
     },
@@ -195,20 +195,19 @@ export class Feishu2md implements INodeType {
           { name: "Zip（推荐）", value: "zip" },
           { name: "文件（每个 Markdown 输出一条）", value: "files" },
         ],
-        default: "zip",
+        default: "files",
       },
       {
         displayName: "下载类型",
         name: "downloadType",
         type: "options",
         options: [
-          { name: "自动识别", value: "auto" },
           { name: "单文档 docx", value: "docx" },
           { name: "批量（云盘文件夹）", value: "batch" },
           { name: "知识库 wiki", value: "wiki" },
         ],
-        default: "auto",
-        description: "默认根据 URL 自动识别；必要时可手动指定",
+        default: "docx",
+        description: "手动选择下载类型；默认单文档",
       },
       {
         displayName: "文件名前缀",
@@ -230,7 +229,7 @@ export class Feishu2md implements INodeType {
 
     const url = this.getNodeParameter("url", 0) as string;
     const outputMode = this.getNodeParameter("outputMode", 0) as string;
-    const downloadType = (this.getNodeParameter("downloadType", 0) as string) || "auto";
+    const downloadType = (this.getNodeParameter("downloadType", 0) as string) || "docx";
     const filePrefix = (this.getNodeParameter("filePrefix", 0) as string) || "";
 
     if (!url) {
@@ -253,7 +252,7 @@ export class Feishu2md implements INodeType {
       ensureExecutable(cmdPath);
       await ensureFeishu2mdConfigured(cmdPath, appId, appSecret);
       const normalizedUrl = String(url).trim().replace(/^`+|`+$/g, "");
-      const finalType = downloadType === "auto" ? detectTypeFromUrl(normalizedUrl) : downloadType;
+      const finalType = downloadType;
       const args = ["dl"];
       if (finalType === "batch") args.push("--batch");
       if (finalType === "wiki") args.push("--wiki");
