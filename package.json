@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-feishu2md",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "n8n node to export Feishu/Lark docx to Markdown via feishu2md CLI",
   "license": "MIT",
   "main": "dist/index.js",
