@@ -242,8 +242,8 @@ export class Feishu2md implements INodeType {
       );
     }
 
-    // Prepare temp output dir
-    const tmpBase = await fsp.mkdtemp(path.join(os.tmpdir(), "feishu2md-"));
+    // Prepare output dir: use current working directory directly
+    const tmpBase = process.cwd();
 
     try {
       // Resolve CLI path from local bin or PATH, then configure and download
@@ -320,15 +320,17 @@ export class Feishu2md implements INodeType {
     } catch (err: any) {
       throw new NodeOperationError(this.getNode(), err?.message || String(err));
     } finally {
-      // Cleanup temp dir
+      // Skip cleanup when using current working directory to avoid deleting project files
       try {
-        const entries = await fsp.readdir(tmpBase);
-        await Promise.all(
-          entries.map(async (e) =>
-            fsp.rm(path.join(tmpBase, e), { recursive: true, force: true })
-          )
-        );
-        await fsp.rm(tmpBase, { recursive: true, force: true });
+        if (tmpBase !== process.cwd()) {
+          const entries = await fsp.readdir(tmpBase);
+          await Promise.all(
+            entries.map(async (e) =>
+              fsp.rm(path.join(tmpBase, e), { recursive: true, force: true })
+            )
+          );
+          await fsp.rm(tmpBase, { recursive: true, force: true });
+        }
       } catch {}
     }
 
