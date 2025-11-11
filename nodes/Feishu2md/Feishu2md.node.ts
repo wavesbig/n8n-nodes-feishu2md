@@ -268,7 +268,7 @@ export class Feishu2md implements INodeType {
         );
         returnItems.push({ json: {} as IDataObject, binary: { data: binary } });
       } else {
-        // Each markdown file becomes an item
+        // Each markdown file becomes an item; also attach static assets compatibility
         const files = await fsp.readdir(tmpBase);
         const mdFiles = files.filter((f) => f.toLowerCase().endsWith(".md"));
         if (mdFiles.length === 0) {
@@ -280,11 +280,13 @@ export class Feishu2md implements INodeType {
           );
           returnItems.push({ json: {} as IDataObject, binary: { data: binary } });
         } else {
+          // Rewrite /static/ -> static/ in markdown to make relative paths work
           for (const f of mdFiles) {
             const full = path.join(tmpBase, f);
-            const content = await fsp.readFile(full);
+            const raw = await fsp.readFile(full, "utf-8");
+            const rewritten = raw.replace(/\/static\//g, "static/");
             const binary = await this.helpers.prepareBinaryData(
-              content,
+              Buffer.from(rewritten, "utf-8"),
               `${filePrefix}${f}`
             );
             returnItems.push({
@@ -292,6 +294,27 @@ export class Feishu2md implements INodeType {
               binary: { data: binary },
             });
           }
+
+          // Additionally output static assets as file items for n8n compatibility
+          const staticDir = path.join(tmpBase, "static");
+          try {
+            const stat = await fsp.stat(staticDir);
+            if (stat.isDirectory()) {
+              const assetFiles = await fsp.readdir(staticDir);
+              for (const af of assetFiles) {
+                const full = path.join(staticDir, af);
+                const content = await fsp.readFile(full);
+                const binary = await this.helpers.prepareBinaryData(
+                  content,
+                  `${filePrefix}static/${af}`
+                );
+                returnItems.push({
+                  json: { fileName: `static/${af}` } as IDataObject,
+                  binary: { data: binary },
+                });
+              }
+            }
+          } catch {}
         }
       }
     } catch (err: any) {
