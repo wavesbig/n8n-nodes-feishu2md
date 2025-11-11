@@ -280,13 +280,11 @@ export class Feishu2md implements INodeType {
           );
           returnItems.push({ json: {} as IDataObject, binary: { data: binary } });
         } else {
-          // Rewrite /static/ -> static/ in markdown to make relative paths work
           for (const f of mdFiles) {
             const full = path.join(tmpBase, f);
             const raw = await fsp.readFile(full, "utf-8");
-            const rewritten = raw.replace(/\/static\//g, "static/");
             const binary = await this.helpers.prepareBinaryData(
-              Buffer.from(rewritten, "utf-8"),
+              Buffer.from(raw, "utf-8"),
               `${filePrefix}${f}`
             );
             returnItems.push({
