@@ -166,6 +166,7 @@ export class Feishu2md implements INodeType {
     group: ["transform"],
     version: 1,
     description: "下载飞书文档为 Markdown（使用 feishu2md CLI）",
+    icon: 'file:feishu2md.svg',
     defaults: {
       name: "Feishu2md",
     },

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="none">
+  <!-- rx="20" fill="white" -->
+  <rect width="128" height="128"/>
+  
+  <!-- 内容整体放大并居中 -->
+  <g transform="translate(64,64) scale(1.18) translate(-64,-64)">
+    <!-- 飞书纸飞机形状（加大） -->
+    <path d="M30 32L98 54L70 68L56 98L30 32Z" fill="#00D6B9"/>
+    <path d="M30 32L98 54L58 64L30 32Z" fill="#3370FF"/>
+    
+    <!-- Markdown “M↓” -->
+    <g transform="translate(66,64)">
+      <path d="M0 26H12V0L18 6L24 0V26H36V-4H24L18 2L12 -4H0V26Z" fill="#1E293B"/>
+      <path d="M12 34L18 40L24 34H18V28H12V34Z" fill="#1E293B"/>
+    </g>
+  </g>
+</svg>
