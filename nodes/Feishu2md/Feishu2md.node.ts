@@ -5,13 +5,14 @@ import type {
 	IDataObject,
 	INodeExecutionData,
 } from 'n8n-workflow';
-import { NodeOperationError } from 'n8n-workflow';
+import { NodeOperationError, ApplicationError } from 'n8n-workflow';
 
 import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
-import { spawn } from 'child_process';
+import { spawn, spawnSync } from 'child_process';
 import archiver from 'archiver';
+import os from 'os';
 
 async function runCommand(
 	command: string,
@@ -28,7 +29,7 @@ async function runCommand(
 		child.on('error', reject);
 		child.on('exit', (code) => {
 			if (code === 0) return resolve();
-			reject(new Error(`${command} exited with code ${code}`));
+			reject(new ApplicationError(`${command} exited with code ${code}`));
 		});
 	});
 }
@@ -47,32 +48,53 @@ async function zipDirectoryToBuffer(dirPath: string): Promise<Buffer> {
 
 function ensureExecutable(filePath: string): void {
 	try {
-		if (process.platform !== 'win32') {
+		if (os.platform() !== 'win32') {
 			const stat = fs.statSync(filePath);
 			// If no execute bit, add it (u/g/o)
 			if ((stat.mode & 0o111) === 0) {
 				fs.chmodSync(filePath, stat.mode | 0o755);
 			}
 		}
+		// eslint-disable-next-line no-empty
 	} catch {}
 }
 
+function findExecutableInPath(binName: string): string | null {
+	const isWin = os.platform() === 'win32';
+	const cmd = isWin ? 'where' : 'which';
+	try {
+		const result = spawnSync(cmd, [binName], { encoding: 'utf-8' });
+		if (result.status === 0 && result.stdout) {
+			const first = result.stdout.split(/\r?\n/).find((l) => l.trim().length > 0);
+			if (first) {
+				const candidate = first.trim();
+				if (fs.existsSync(candidate)) return candidate;
+			}
+		}
+		// eslint-disable-next-line no-empty
+	} catch {}
+	return null;
+}
+
 function resolveFeishu2mdPath(): string {
-	const isWin = process.platform === 'win32';
-	const osLabel = isWin ? 'windows' : process.platform === 'darwin' ? 'darwin' : 'linux';
-	const archLabel = process.arch === 'arm64' ? 'arm64' : 'amd64';
+	const isWin = os.platform() === 'win32';
+	const osLabel = isWin ? 'windows' : os.platform() === 'darwin' ? 'darwin' : 'linux';
+	const archLabel = os.arch() === 'arm64' ? 'arm64' : 'amd64';
 	const binName = isWin ? 'feishu2md.exe' : 'feishu2md';
 
-	// Env override: allow explicit path (useful in Docker)
-	const envPath = process.env.FEISHU2MD_PATH;
-	if (envPath && fs.existsSync(envPath)) {
-		return envPath;
+	// Prefer packaged bin directories: package root and local CWD (dev)
+	function getPackageRoot(): string | null {
+		try {
+			const pkgPath = require.resolve('n8n-nodes-feishu2md/package.json');
+			return path.dirname(pkgPath);
+		} catch {
+			return null;
+		}
 	}
-
-	// Prefer packaged bin directories: both package root and dist root
-	const pkgRoot = path.resolve(__dirname, '..', '..', '..'); // <package>/
-	const distRoot = path.resolve(__dirname, '..', '..'); // <package>/dist
-	const binRoots = [path.join(pkgRoot, 'bin'), path.join(distRoot, 'bin')];
+	const pkgRoot = getPackageRoot();
+	const binRoots = [] as string[];
+	if (pkgRoot) binRoots.push(path.join(pkgRoot, 'bin'));
+	binRoots.push(path.resolve('.', 'bin'));
 
 	for (const binRoot of binRoots) {
 		try {
@@ -101,20 +123,15 @@ function resolveFeishu2mdPath(): string {
 					return candidate;
 				}
 			}
+			// eslint-disable-next-line no-empty
 		} catch {}
 	}
 
-	// Fallback to PATH
-	const pathEnv = process.env.PATH || '';
-	const pathParts = pathEnv.split(path.delimiter);
-	for (const p of pathParts) {
-		const candidate = path.join(p, binName);
-		if (fs.existsSync(candidate)) {
-			return candidate;
-		}
-	}
+	// Fallback: try to locate via system PATH using which/where
+	const fromPath = findExecutableInPath(binName);
+	if (fromPath) return fromPath;
 
-	throw new Error(
+	throw new ApplicationError(
 		'未找到 feishu2md 可执行文件，请在包根或 dist/bin、或设置 FEISHU2MD_PATH、或添加到系统 PATH',
 	);
 }
@@ -134,7 +151,7 @@ export class Feishu2md implements INodeType {
 		group: ['transform'],
 		version: 1,
 		description: '下载飞书文档为 Markdown（使用 feishu2md CLI）',
-		icon: 'file:../icons/feishu2md.svg',
+		icon: 'file:../../icons/feishu2md.svg',
 		defaults: {
 			name: 'Feishu2md',
 		},
@@ -192,8 +209,8 @@ export class Feishu2md implements INodeType {
 		const returnItems: INodeExecutionData[] = [];
 
 		const credentials = await this.getCredentials('feishuApi');
-		const appId = (credentials as any).appId as string;
-		const appSecret = (credentials as any).appSecret as string;
+		const appId = credentials.appId as string;
+		const appSecret = credentials.appSecret as string;
 
 		const url = this.getNodeParameter('url', 0) as string;
 		const outputMode = this.getNodeParameter('outputMode', 0) as string;
@@ -207,8 +224,8 @@ export class Feishu2md implements INodeType {
 			throw new NodeOperationError(this.getNode(), '未配置 Feishu API 的 App ID 或 App Secret');
 		}
 
-		// Prepare output dir: use current working directory directly
-		const tmpBase = process.cwd();
+		// Prepare output dir: create a dedicated temporary workspace
+		const tmpBase = await fsp.mkdtemp(path.join(os.tmpdir(), 'feishu2md-'));
 
 		try {
 			// Resolve CLI path from local bin or PATH, then configure and download
@@ -273,23 +290,22 @@ export class Feishu2md implements INodeType {
 								});
 							}
 						}
+						// eslint-disable-next-line no-empty
 					} catch {}
 				}
 			}
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (err: any) {
 			throw new NodeOperationError(this.getNode(), err?.message || String(err));
 		} finally {
-			// Skip cleanup when using current working directory to avoid deleting project files
+			// Always cleanup the temp workspace
 			try {
-				if (tmpBase !== process.cwd()) {
-					const entries = await fsp.readdir(tmpBase);
-					await Promise.all(
-						entries.map(async (e) =>
-							fsp.rm(path.join(tmpBase, e), { recursive: true, force: true }),
-						),
-					);
-					await fsp.rm(tmpBase, { recursive: true, force: true });
-				}
+				const entries = await fsp.readdir(tmpBase);
+				await Promise.all(
+					entries.map(async (e) => fsp.rm(path.join(tmpBase, e), { recursive: true, force: true })),
+				);
+				await fsp.rm(tmpBase, { recursive: true, force: true });
+				// eslint-disable-next-line no-empty
 			} catch {}
 		}
 

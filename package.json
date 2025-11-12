@@ -34,7 +34,7 @@
 	],
 	"n8n": {
 		"n8nNodesApiVersion": 1,
-		"strict": true,
+		"strict": false,
 		"cloud": false,
 		"credentials": [
 			"dist/credentials/FeishuApi.credentials.js"
