@@ -241,6 +241,31 @@ export class Feishu2md implements INodeType {
 			args.push('-o', tmpBase, normalizedUrl);
 			await runCommand(cmdPath, args);
 
+			// Ensure images are placed under ./static for markdown references
+			const ensureStaticDir = path.join(tmpBase, 'static');
+			await fsp.mkdir(ensureStaticDir, { recursive: true });
+			// Try common asset directories and move/copy images into static
+			for (const candidate of ['assets', 'images']) {
+				const srcDir = path.join(tmpBase, candidate);
+				try {
+					const stat = await fsp.stat(srcDir);
+					if (stat.isDirectory()) {
+						const files = await fsp.readdir(srcDir);
+						for (const af of files) {
+							if (/\.(png|jpg|jpeg|gif|webp|svg)$/i.test(af)) {
+								const src = path.join(srcDir, af);
+								const dest = path.join(ensureStaticDir, af);
+								try {
+									await fsp.copyFile(src, dest);
+									// eslint-disable-next-line no-empty
+								} catch {}
+							}
+						}
+					}
+					// eslint-disable-next-line no-empty
+				} catch {}
+			}
+
 			// After download, either zip or return files
 			if (outputMode === 'zip') {
 				const buffer = await zipDirectoryToBuffer(tmpBase);
@@ -296,13 +321,15 @@ export class Feishu2md implements INodeType {
 		} catch (err: any) {
 			throw new NodeOperationError(this.getNode(), err?.message || String(err));
 		} finally {
-			// Always cleanup the temp workspace
+			// Skip cleanup when using current directory as output
 			try {
-				const entries = await fsp.readdir(tmpBase);
-				await Promise.all(
-					entries.map(async (e) => fsp.rm(path.join(tmpBase, e), { recursive: true, force: true })),
-				);
-				await fsp.rm(tmpBase, { recursive: true, force: true });
+				if (tmpBase !== './' && tmpBase !== '.') {
+					const entries = await fsp.readdir(tmpBase);
+					await Promise.all(
+						entries.map(async (e) => fsp.rm(path.join(tmpBase, e), { recursive: true, force: true })),
+					);
+					await fsp.rm(tmpBase, { recursive: true, force: true });
+				}
 				// eslint-disable-next-line no-empty
 			} catch {}
 		}
