@@ -13,7 +13,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": ""
+		"url": "https://github.com/wavesbig/n8n-nodes-feishu2md.git"
 	},
 	"scripts": {
 		"build": "n8n-node build",
