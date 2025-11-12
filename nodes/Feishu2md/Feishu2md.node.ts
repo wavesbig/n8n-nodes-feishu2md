@@ -6,13 +6,12 @@ import type {
 	INodeExecutionData,
 } from 'n8n-workflow';
 import { NodeOperationError, ApplicationError } from 'n8n-workflow';
-
+import os from 'os';
 import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
 import { spawn, spawnSync } from 'child_process';
 import archiver from 'archiver';
-import os from 'os';
 
 async function runCommand(
 	command: string,
@@ -224,8 +223,7 @@ export class Feishu2md implements INodeType {
 			throw new NodeOperationError(this.getNode(), '未配置 Feishu API 的 App ID 或 App Secret');
 		}
 
-		// Prepare output dir: create a dedicated temporary workspace
-		const tmpBase = await fsp.mkdtemp(path.join(os.tmpdir(), 'feishu2md-'));
+		const tmpBase = './';
 
 		try {
 			// Resolve CLI path from local bin or PATH, then configure and download
