@@ -1,39 +1,60 @@
 {
-  "name": "n8n-nodes-feishu2md",
-  "version": "0.1.10",
-  "description": "n8n node to export Feishu/Lark docx to Markdown via feishu2md CLI",
-  "license": "MIT",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "n8n": {
-    "nodes": [
-      "dist/nodes/Feishu2md/Feishu2md.node.js"
-    ],
-    "credentials": [
-      "dist/credentials/FeishuApi.credentials.js"
-    ]
-  },
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "clean": "rimraf dist",
-    "prepare": "npm run build"
-  },
-  "files": [
-    "dist",
-    "bin",
-    "icons",
-    "README.md",
-    "package.json"
-  ],
-  "dependencies": {
-    "archiver": "^7.0.1"
-  },
-  "devDependencies": {
-    "@types/archiver": "^3.1.1",
-    "@types/node": "^20.14.10",
-    "n8n-core": "^1.61.0",
-    "n8n-workflow": "^1.61.0",
-    "rimraf": "^6.0.1",
-    "typescript": "^5.6.3"
-  }
+	"name": "n8n-nodes-feishu2md",
+	"version": "0.1.10",
+	"description": "n8n node to export Feishu/Lark docx to Markdown via feishu2md CLI",
+	"license": "MIT",
+	"homepage": "",
+	"keywords": [
+		"n8n-community-node-package"
+	],
+	"author": {
+		"name": "wavesbig",
+		"email": "wavesbig@qq.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": ""
+	},
+	"scripts": {
+		"build": "n8n-node build",
+		"build:watch": "tsc --watch",
+		"dev": "n8n-node dev",
+		"lint": "n8n-node lint",
+		"lint:fix": "n8n-node lint --fix",
+		"release": "n8n-node release",
+		"prepublishOnly": "n8n-node prerelease"
+	},
+	"files": [
+		"dist",
+		"bin",
+		"icons",
+		"README.md",
+		"package.json"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"strict": true,
+		"credentials": [
+			"dist/credentials/FeishuApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/Feishu2md/Feishu2md.node.js"
+		]
+	},
+	"dependencies": {
+		"archiver": "^7.0.1"
+	},
+	"devDependencies": {
+		"@n8n/node-cli": "*",
+		"@types/archiver": "^3.1.1",
+		"@types/node": "^20.14.10",
+		"eslint": "9.32.0",
+		"prettier": "3.6.2",
+		"release-it": "^19.0.4",
+		"rimraf": "^6.0.1",
+		"typescript": "5.9.2"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	}
 }
