@@ -22,12 +22,13 @@
 		"lint": "n8n-node lint",
 		"lint:fix": "n8n-node lint --fix",
 		"release": "n8n-node release",
-		"prepublishOnly": "n8n-node prerelease"
+		"prepublishOnly": "n8n-node prerelease && node scripts/copy-readme.mjs"
 	},
 	"files": [
 		"dist",
 		"bin",
 		"icons",
+		"docs",
 		"README.md",
 		"package.json"
 	],
