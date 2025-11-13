@@ -239,6 +239,23 @@ export class Feishu2md implements INodeType {
 			if (finalType === 'batch') args.push('--batch');
 			if (finalType === 'wiki') args.push('--wiki');
 			args.push('-o', tmpBase, normalizedUrl);
+
+			// Pre-run cleanup: remove previous images to avoid stale assets
+			for (const d of ['static', 'assets', 'images']) {
+				const dirPath = path.join(tmpBase, d);
+				try {
+					const stat = await fsp.stat(dirPath);
+					if (stat.isDirectory()) {
+						const entries = await fsp.readdir(dirPath);
+						await Promise.all(
+							entries.map(async (e) =>
+								fsp.rm(path.join(dirPath, e), { recursive: true, force: true }),
+							),
+						);
+					}
+					// eslint-disable-next-line no-empty
+				} catch {}
+			}
 			await runCommand(cmdPath, args);
 
 			// Ensure images are placed under ./static for markdown references
