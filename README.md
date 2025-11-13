@@ -1,64 +1,80 @@
-# n8n-nodes-feishu2md
+# n8n-飞书2md
 
-将 GitHub 项目 `Wsine/feishu2md` 封装为 n8n 自定义节点，支持输入飞书新版文档 URL，导出为 Markdown 并以二进制输出（Zip 或单文件）。
+一个让你在 n8n 里一键把飞书文档导出为 Markdown 的节点。它内置对 `feishu2md` 的调用，几乎“零配置”就能用。
 
-## 功能特性
+## 效果展示
 
-- 输入飞书新版文档 URL，调用 `feishu2md` CLI 下载为 Markdown
-- 支持输出模式：Zip（包含图片、附件等资源）或单 Markdown 文件（每个文件一条）
-- 通过 n8n 凭据传入 `App ID` 与 `App Secret`，节点自动执行 `feishu2md config`
+![n8n 节点效果示例](./docs/Snipaste_2025-11-13_13-47-53.png)
 
-## 环境准备
+## 这是什么
 
-1. 预置或安装 feishu2md 可执行文件
-   - 推荐：将可执行文件放入本包的 `bin/` 目录，支持两种方式：
-     - 直接放置：`bin/feishu2md`（Linux/macOS，需 `chmod +x`）或 `bin/feishu2md.exe`（Windows）
-     - 平台分目录：`bin/feishu2md-vX.Y.Z-<os>-<arch>/feishu2md[.exe]`
-       - `<os>` 取值：`windows`、`linux`、`darwin`
-       - `<arch>` 取值：`amd64` 或 `arm64`
-       - 示例：`bin/feishu2md-v2.4.5-windows-amd64/feishu2md.exe`
-   - 备选：将可执行文件加入系统 `PATH`
-   - 节点会优先查找平台匹配的 `bin/` 子目录，其次查找 `bin/` 根目录，最后回退到 `PATH`
-   - 命令行帮助参考：
-     - `feishu2md -h`
-     - `feishu2md config -h`
-     - `feishu2md dl -h`
-2. n8n 版本建议 ≥ 1.6x。
+- 在 n8n 工作流中，输入飞书文档的链接，自动下载并生成 Markdown。
+- 支持两种输出方式：
+  - `Zip（推荐）`：打包 Markdown 和图片资源，一次拿走。
+  - `文件`：每个 Markdown 文件作为一条输出，同时会附带图片资源（位于 `static/`）。
+- 使用 n8n 的凭据传入 `App ID` 和 `App Secret`，节点会自动执行 `feishu2md config`。
 
-> feishu2md 项目介绍与使用方法参考：Wsine/feishu2md 仓库（命令行与权限说明、配置步骤等）
+## 你需要准备什么（1分钟搞定）
 
-## 安装（作为自定义节点包）
+- 一个可读的飞书文档链接（打开“链接分享：互联网上可读”）。
+- 飞书开放平台应用的 `App ID` 和 `App Secret`（用于 API 授权）。
+- `feishu2md` 可执行文件：
+  - 本仓库已附带多平台版本，放在 `bin/` 目录下（优先使用）。
+  - 或者你在系统 `PATH` 中已经安装了 `feishu2md`。
 
-1. 在该目录执行：
-   ```bash
+## 安装到 n8n（两步）
+
+1. 在项目目录执行：
+   ```
    npm install
    npm run build
    ```
-2. 将本包发布至私有 npm 或将 `dist` 打包至 n8n `custom` 节点目录（具体做法取决于你的部署方式）。常见方法：
-   - 在 n8n 容器或主机内安装：`npm install <path-to-n8n-nodes-feishu2md>`
-   - 或按 n8n 的自定义节点加载约定放置编译产物。
+2. 将编译后的包按 n8n 的“自定义节点”方式加载（常见做法：在 n8n 环境中 `npm install <本项目路径>`，或将 `dist` 放到自定义节点目录）。
 
-## 在 n8n 中使用
+## 安装教程
 
-1. 在 n8n 的 Credentials 新建 `Feishu API`，填写：
-   - `App ID`
-   - `App Secret`
-2. 新建工作流，添加节点 `Feishu2md`：
-   - `文档 URL`：粘贴飞书文档链接（需开启链接分享“互联网上可读”）
-   - `输出模式`：选择 `Zip（推荐）` 或 `文件`
-   - `文件名前缀`（可选）：输出文件名的前缀
-3. 运行节点：
-   - `Zip` 模式下，输出的 `binary.data` 是一个 zip 压缩包（包含 Markdown 与资源）
-   - `文件` 模式下，每个 Markdown 文件会分别作为一条 `binary.data`
+- 参考官方文档：<https://docs.n8n.io/integrations/community-nodes/installation/>
+- 节点包名称：`n8n-nodes-feishu2md`
+- 简要流程：在 n8n 设置中启用“社区节点”，按上述文档安装并重启 n8n，即可在节点面板中搜索到本节点。
 
-## 注意事项
+## 在 n8n 中使用（一步步来）
 
-- 节点会在执行时自动运行：
-  - `feishu2md config --appId <id> --appSecret <secret>`
-  - `feishu2md dl -o <临时目录> <url>`
-- 请确保 feishu2md 已提供（优先 bin/，备选 PATH），且具备所需 API 权限（docx、drive、wiki 等）。
-- Windows 环境建议将 `feishu2md.exe` 放入包内 `bin/`。
-- 如果选择 `文件` 输出而未找到 `.md` 文件，节点会回退为 Zip 输出。
+1. 新建凭据：在 n8n 的 Credentials 创建 `Feishu API`，填写 `App ID` 和 `App Secret`。
+2. 加节点：把 `Feishu2md` 节点拖进工作流。
+3. 填参数：
+   - `文档 URL`：粘贴飞书文档链接。
+   - `输出模式`：选 `Zip（推荐）` 或 `文件`。
+   - `文件名前缀`：需要的话填一个前缀（可为空）。
+4. 运行：
+   - 选 `Zip` 时，节点输出一个 zip（二进制）包含 Markdown 和所有资源。
+   - 选 `文件` 时，节点会把每个 Markdown 作为一条输出，同时把图片资源也作为文件项输出，路径形如 `static/xxx.png`。
+
+## 文件与图片在哪里
+
+- 节点下载生成的内容默认写入当前工作目录（相对路径 `./`）。
+- 图片统一放在 `./static/` 文件夹下，Markdown 中的图片路径已指向该目录（例如 `static/abc.png`）。
+- 选择 `文件` 输出时，节点还会把 `static/` 中的图片作为额外的二进制文件项输出，便于后续保存或传递。
+
+## 常见问题（FAQ）
+
+- 节点提示找不到 `feishu2md` 怎么办？
+  - 确认本项目 `bin/` 里有对应平台的可执行文件；或你已在系统 `PATH` 中安装了 `feishu2md`。
+- 链接必须“互联网上可读”吗？
+  - 是的，至少需要开启链接分享可读，否则下载会失败。
+- 我只要 Markdown 和图片，其他不要，怎么打包？
+  - 选 `Zip` 输出即可；如果你要自定义打包内容，可以在工作流中用后续节点自己挑选和压缩文件。
+
+## 原理（懂一点就好）
+
+节点内部做了两件事：
+
+- 先用你提供的 `App ID` 与 `App Secret` 执行一次 `feishu2md config`。
+- 再执行 `feishu2md dl -o ./ <url>` 下载文档；下载后把 Markdown 和 `static/` 内的图片作为二进制输出给 n8n。
+
+## 致谢
+
+- CLI 工具来自开源项目：Wsine/feishu2md（https://github.com/Wsine/feishu2md）。
+- 非常感谢该项目及其作者、贡献者的长期维护与付出，让本节点得以稳定可靠地工作。
 
 ## 许可
 
