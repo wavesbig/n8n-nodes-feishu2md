@@ -2,6 +2,11 @@
 
 一个让你在 n8n 里一键把飞书文档导出为 Markdown 的节点。它内置对 `feishu2md` 的调用，几乎“零配置”就能用。
 
+[![npm version](https://img.shields.io/npm/v/n8n-nodes-feishu2md.svg)](https://www.npmjs.com/package/n8n-nodes-feishu2md) [![npm downloads](https://img.shields.io/npm/dm/n8n-nodes-feishu2md.svg)](https://www.npmjs.com/package/n8n-nodes-feishu2md) [![GitHub stars](https://img.shields.io/github/stars/wavesbig/n8n-nodes-feishu2md?style=social)](https://github.com/wavesbig/n8n-nodes-feishu2md) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+> 喜欢就 Star 一下，帮助更多人发现这个项目：
+> https://github.com/wavesbig/n8n-nodes-feishu2md
+
 ## 效果展示
 
 ![n8n 节点效果示例](./docs/Snipaste_2025-11-13_13-47-53.png)
