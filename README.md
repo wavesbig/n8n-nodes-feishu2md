@@ -27,22 +27,13 @@
   - 本仓库已附带多平台版本，放在 `bin/` 目录下（优先使用）。
   - 或者你在系统 `PATH` 中已经安装了 `feishu2md`。
 
-## 安装到 n8n（两步）
-
-1. 在项目目录执行：
-   ```
-   npm install
-   npm run build
-   ```
-2. 将编译后的包按 n8n 的“自定义节点”方式加载（常见做法：在 n8n 环境中 `npm install <本项目路径>`，或将 `dist` 放到自定义节点目录）。
-
 ## 安装教程
 
 - 参考官方文档：<https://docs.n8n.io/integrations/community-nodes/installation/>
 - 节点包名称：`n8n-nodes-feishu2md`
 - 简要流程：在 n8n 设置中启用“社区节点”，按上述文档安装并重启 n8n，即可在节点面板中搜索到本节点。
 
-## 在 n8n 中使用（一步步来）
+## 在 n8n 中使用
 
 1. 新建凭据：在 n8n 的 Credentials 创建 `Feishu API`，填写 `App ID` 和 `App Secret`。
 2. 加节点：把 `Feishu2md` 节点拖进工作流。
