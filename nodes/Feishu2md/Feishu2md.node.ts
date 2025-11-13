@@ -176,8 +176,8 @@ export class Feishu2md implements INodeType {
 				name: 'outputMode',
 				type: 'options',
 				options: [
-					{ name: 'Zip（推荐）', value: 'zip' },
 					{ name: '文件（每个 Markdown 输出一条）', value: 'files' },
+					{ name: 'Zip', value: 'zip' },
 				],
 				default: 'files',
 			},
@@ -343,7 +343,9 @@ export class Feishu2md implements INodeType {
 				if (tmpBase !== './' && tmpBase !== '.') {
 					const entries = await fsp.readdir(tmpBase);
 					await Promise.all(
-						entries.map(async (e) => fsp.rm(path.join(tmpBase, e), { recursive: true, force: true })),
+						entries.map(async (e) =>
+							fsp.rm(path.join(tmpBase, e), { recursive: true, force: true }),
+						),
 					);
 					await fsp.rm(tmpBase, { recursive: true, force: true });
 				}

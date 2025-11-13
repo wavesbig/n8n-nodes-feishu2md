@@ -15,17 +15,14 @@
 
 - 在 n8n 工作流中，输入飞书文档的链接，自动下载并生成 Markdown。
 - 支持两种输出方式：
-  - `Zip（推荐）`：打包 Markdown 和图片资源，一次拿走。
   - `文件`：每个 Markdown 文件作为一条输出，同时会附带图片资源（位于 `static/`）。
+  - `Zip`：打包 Markdown 和图片资源，一次拿走。
 - 使用 n8n 的凭据传入 `App ID` 和 `App Secret`，节点会自动执行 `feishu2md config`。
 
 ## 你需要准备什么（1分钟搞定）
 
 - 一个可读的飞书文档链接（打开“链接分享：互联网上可读”）。
-- 飞书开放平台应用的 `App ID` 和 `App Secret`（用于 API 授权）。
-- `feishu2md` 可执行文件：
-  - 本仓库已附带多平台版本，放在 `bin/` 目录下（优先使用）。
-  - 或者你在系统 `PATH` 中已经安装了 `feishu2md`。
+- 飞书开放平台应用的 `App ID` 和 `App Secret`（用于 API 授权，开通指引：<https://open.feishu.cn/document/client-docs/h5/development-guide/step1>）。
 
 ## 安装教程
 
